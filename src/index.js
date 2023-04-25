@@ -11,7 +11,7 @@ app.get("/",(req,res)=>{
 })
 
 
-mongoose.connect("mongodb+srv://Suman-1432:Suman1432@cluster0.bkkfmpr.mongodb.net/assignment_blog")
+mongoose.connect(`${process.env.DB_URL}`)
 .then(()=>{
     console.log("MONGODB IS CONNECTED")
 }).catch((err)=>{
