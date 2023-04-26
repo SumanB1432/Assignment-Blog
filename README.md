@@ -1,5 +1,7 @@
 # Assignment-Blog
 
+# start command - `npm start` 
+
 ### Models
 - User Model
 ```
