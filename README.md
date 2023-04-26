@@ -20,13 +20,13 @@
 
 ### POST /blogs
 - Create a blog document from request body. Get userId in request body only.
-- End point `localhost:5000/createblog`(POST REQUEST)
+- End point `localhost:5000/blogs`(POST REQUEST)
 - Return HTTP status 201 on a successful blog creation. Also return the blog document.
 - Return HTTP status 400 for an invalid request with a response body .
 
 ### GET /blogs
 - Get the filter request form the request body.
-- End point `localhost:5000/blog/get`(GET REQUEST)
+- End point `localhost:5000/blogs`(GET REQUEST)
 - Pagination is implement in this api you can pass `page` and `limit` through query parameters.
 - Returns all blogs in the collection that aren't deleted and those are match with the filter like(user name, userId,title,timestamps)
 - Return the HTTP status 200 if any documents are found.
@@ -35,17 +35,19 @@
 
 ### PUT /blogs/:blogId
 - Updates a blog by changing the its title, content.
-- End point `localhost:5000/blog/update/:blogId`(PUT REQUEST)
+- End point `localhost:5000/blogs/:blogId`(PUT REQUEST)
 - Check if the blogId exists (must have isDeleted false). If it doesn't, return an HTTP status 404 with a response body.
 - Return an HTTP status 200 if updated successfully with a response.
  
 
 ### DELETE /blogs/:blogId
 - Check if the blogId exists( and is not deleted). If it does, mark it deleted and return an HTTP status 200 without any response body.
+- End Point - `localhost:5000/blogs/:blogId`
 - If the blog document doesn't exist then return an HTTP status of 404 with a body.
 
 ### POST /login
 - Allow an user to login with their email and password. On a successful login attempt return a JWT token contatining the userId
+- End point `localhost:5000/user/login`
 - If the credentials are incorrect return a suitable error message with a valid HTTP status code(401 for not authenticated)
 
 ### Authentication
