@@ -1,7 +1,7 @@
 const blogModel = require("../model/BlogModel");
 // const authorModel = require("../model/UserModel");
 const mongoose = require("mongoose");
-const uploadFile = require("./awsController")
+const uploadFile = require("./awsController");
 const ObjectId = mongoose.Types.ObjectId;
 const joi = require("joi");
 const UserModel = require("../model/UserModel");
@@ -29,6 +29,16 @@ const createBlog = async function (req, res) {
       }
       return res.status(400).send({ status: false, message: err });
     }
+    //////----Authorization-----------/////////
+    console.log(data.userId,req.userId)
+    if (data.userId!== req.userId) {
+        return res
+          .status(403)
+          .send({
+            status: false,
+            message: "You are not authorized to update the blog",
+          }); //authorizaton
+      }
 
     if (!mongoose.isValidObjectId(data.userId))
       return res
@@ -36,7 +46,7 @@ const createBlog = async function (req, res) {
         .send({ status: false, msg: "Please enter correct length of user Id" });
     //  console.log(mongoose, 37);
 
-    let get_user = await authorModel.findById(data.userId);
+    let get_user = await UserModel.findById(data.userId);
 
     if (!get_user) {
       return res
@@ -53,17 +63,14 @@ const createBlog = async function (req, res) {
         message: "userId and userName dose not matched",
       });
     }
-    const blogPhoto = await uploadFile(files[0])
+    const blogPhoto = await uploadFile(files[0]);
     data = {
       title: data.title.toUpperCase(),
       content: data.content,
-      blogImage:blogPhoto,
+      blogImage: blogPhoto,
       userName: data.userName.toUpperCase(),
       userId: data.userId,
-
     };
-   
-
 
     let saveData = await blogModel.create(data);
 
@@ -83,6 +90,7 @@ const filterBlog = async function (req, res) {
     let filter = {
       isDeleted: false,
     };
+    
     ////////////////////////////------PAGINATION --------------///////////////////////////////////////////////////////////
     let page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 3;
@@ -169,7 +177,6 @@ const updateBlog = async function (req, res) {
       return res.status(400).send({ status: false, message: err });
     }
 
-
     if (!ObjectId.isValid(blogId)) {
       return res
         .status(400)
@@ -179,12 +186,17 @@ const updateBlog = async function (req, res) {
     let blog_Id = await blogModel.findOne({ _id: blogId, isDeleted: false });
 
     if (!blog_Id) {
-      res.status(400).send({ status: false, msg: " blog Id not found" });
+      return res.status(400).send({ status: false, msg: " blog Id not found or already deleted" });
     }
-     //////----Authorization-----------/////////
-     if (blog_Id.userId.toString() !== req.userId) {
-        return res.status(403).send({ status: false, message: "You are not able to update the blog" })//authorizaton
-      }
+    //////----Authorization-----------/////////
+    if (blog_Id.userId.toString() !== req.userId) {
+      return res
+        .status(403)
+        .send({
+          status: false,
+          message: "You are not authorized to update the blog",
+        }); //authorizaton
+    }
     let update_query = {};
 
     if (title != null) {
@@ -229,10 +241,16 @@ const deleteBlog = async function (req, res) {
     if (!BlogId) {
       res.status(404).send({ msg: "Please enter valid blogId" });
     }
-     //////----Authorization-----------/////////
-     if (BlogId.userId.toString() !== req.userId) {
-        return res.status(403).send({ status: false, message: "You are not able to update the blog" })//authorizaton
-      }
+    //////----Authorization-----------/////////
+    if (BlogId.userId.toString() !== req.userId) {
+      return res
+        .status(403)
+        .send({
+          status: false,
+          message: "You are not able to update the blog",
+        }); //authorizaton
+    }
+    /////////////
 
     let deletedBlog = await blogModel.findOneAndUpdate(
       { _id: data, isDeleted: false },
