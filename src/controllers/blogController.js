@@ -145,6 +145,7 @@ const updateBlog = async function (req, res) {
     });
     let data = req.body;
     let blogId = req.params.blogId;
+    console.log(blogId)
 
     const { title, content } = data;
     let err = [];
