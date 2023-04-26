@@ -13,6 +13,13 @@ const blogSchema = new mongoose.Schema({
         trim:true
 
     },
+    userName:{
+        type:String,
+        ref:"User",
+        required:true
+
+    },
+    
     userId: {
         type: ObjectId,
         ref: "User",
