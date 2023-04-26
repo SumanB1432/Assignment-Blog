@@ -12,6 +12,7 @@ router.post("/user/login",userController.loginUser)
 router.post("/createblog",blogController.createBlog)
 router.delete("/delete/blog",middleware.Authentication,blogController.deleteBlog)
 router.get("/blog/get",blogController.filterBlog);
+router.put("/blog/update/:blogId",blogController.updateBlog)
 
 
 module.exports = router;

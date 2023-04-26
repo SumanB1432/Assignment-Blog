@@ -45,12 +45,10 @@ const createBlog = async function (req, res) {
     // console.log(user_name)
     let req_user = data.userName.toLowerCase();
     if (user_name !== req_user) {
-      return res
-        .status(400)
-        .send({
-          status: false,
-          message: "userId and userName dose not matched",
-        });
+      return res.status(400).send({
+        status: false,
+        message: "userId and userName dose not matched",
+      });
     }
     data = {
       title: data.title.toUpperCase(),
@@ -74,13 +72,18 @@ const filterBlog = async function (req, res) {
     let data = req.body;
     let { title, userName, userId, timestamps } = data;
 
-   
     let filter = {
       isDeleted: false,
     };
+    ////////////////////////////------PAGINATION --------------///////////////////////////////////////////////////////////
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 3;
+    let skip = (page - 1) * limit;
+    console.log(skip);
+    ///////////////////////////////////////////////////////////////////////////
 
     if (title != null) {
-        title = title.toUpperCase();
+      title = title.toUpperCase();
       let verifyCategory = await blogModel.find({ title: title });
       if (verifyCategory == 0) {
         return res
@@ -90,7 +93,7 @@ const filterBlog = async function (req, res) {
       filter["title"] = title.toUpperCase();
     }
     if (userName != null) {
-        userName = userName.toUpperCase();
+      userName = userName.toUpperCase();
       console.log("hi");
       let verifyCategory = await blogModel.find({ userName: userName });
       if (verifyCategory.length == 0) {
@@ -120,18 +123,74 @@ const filterBlog = async function (req, res) {
     }
     console.log(filter);
 
-    let getRecord = await blogModel.find(filter);
+    let getRecord = await blogModel.find(filter).skip(skip).limit(limit);
     if (getRecord.length == 0) {
-      return res
-        .status(404)
-        .send({
-          status: false,
-          message: "no such blog found for the given filter",
-        });
+      return res.status(404).send({
+        status: false,
+        message: "no such blog found for the given filter",
+      });
     }
+    console.log(getRecord.length);
     return res.status(200).send({ status: true, message: getRecord });
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });
+  }
+};
+////////////////////////----------UPDATE BLOG---------------------////////////////////////////////////
+const updateBlog = async function (req, res) {
+  try {
+    const updateBlogSchema = joi.object({
+      title: joi.string(),
+      content: joi.string(),
+    });
+    let data = req.body;
+    let blogId = req.params.blogId;
+
+    const { title, content } = data;
+    let err = [];
+
+    const { error, value } = updateBlogSchema.validate(data, {
+      abortEarly: false,
+    });
+    if (error) {
+      let errArr = error.details;
+      for (let i = 0; i < errArr.length; i++) {
+        err.push(errArr[i].message);
+      }
+      return res.status(400).send({ status: false, message: err });
+    }
+
+    if (!ObjectId.isValid(blogId)) {
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please enter correct length of blog Id" });
+    }
+
+    let blog_Id = await blogModel.findOne({ _id: blogId, isDeleted: false });
+
+    if (!blog_Id) {
+      res.status(400).send({ status: false, msg: " blog Id not found" });
+    }
+    let update_query = {};
+
+    if (title != null) {
+      update_query["title"] = title.toUpperCase();
+    }
+    if (content != null) {
+      update_query["content"] = content;
+    }
+
+    let updateBlog = await blogModel.findOneAndUpdate(
+      { _id: blogId, isDeleted: false },
+      {
+        $set: update_query,
+      },
+      { new: true }
+    );
+
+    res.status(200).send({ status: true, data: updateBlog });
+  } catch (err) {
+    res.status(500).send({ status: false, msg: err.message });
   }
 };
 
@@ -179,3 +238,4 @@ const deleteBlog = async function (req, res) {
 exports.createBlog = createBlog;
 exports.deleteBlog = deleteBlog;
 exports.filterBlog = filterBlog;
+exports.updateBlog = updateBlog;
