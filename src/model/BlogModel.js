@@ -13,6 +13,10 @@ const blogSchema = new mongoose.Schema({
         trim:true
 
     },
+    blogImage:{
+        type:String,
+
+    },
     userName:{
         type:String,
         ref:"User",

@@ -1,8 +1,10 @@
 const blogModel = require("../model/BlogModel");
-const authorModel = require("../model/UserModel");
+// const authorModel = require("../model/UserModel");
 const mongoose = require("mongoose");
+const uploadFile = require("./awsController")
 const ObjectId = mongoose.Types.ObjectId;
 const joi = require("joi");
+const UserModel = require("../model/UserModel");
 ///////////////-----------------------------------------create Blog-------------------------------------------------------///
 const blogSchema = joi.object({
   title: joi.string().required(),
@@ -16,6 +18,7 @@ const blogSchema = joi.object({
 const createBlog = async function (req, res) {
   try {
     let data = req.body;
+    const files = req.files;
     let err = [];
 
     const { error, value } = blogSchema.validate(data, { abortEarly: false });
@@ -50,12 +53,17 @@ const createBlog = async function (req, res) {
         message: "userId and userName dose not matched",
       });
     }
+    const blogPhoto = await uploadFile(files[0])
     data = {
       title: data.title.toUpperCase(),
       content: data.content,
+      blogImage:blogPhoto,
       userName: data.userName.toUpperCase(),
       userId: data.userId,
+
     };
+   
+
 
     let saveData = await blogModel.create(data);
 
@@ -145,7 +153,7 @@ const updateBlog = async function (req, res) {
     });
     let data = req.body;
     let blogId = req.params.blogId;
-    console.log(blogId)
+    // console.log(blogId)
 
     const { title, content } = data;
     let err = [];
@@ -161,6 +169,7 @@ const updateBlog = async function (req, res) {
       return res.status(400).send({ status: false, message: err });
     }
 
+
     if (!ObjectId.isValid(blogId)) {
       return res
         .status(400)
@@ -172,6 +181,10 @@ const updateBlog = async function (req, res) {
     if (!blog_Id) {
       res.status(400).send({ status: false, msg: " blog Id not found" });
     }
+     //////----Authorization-----------/////////
+     if (blog_Id.userId.toString() !== req.userId) {
+        return res.status(403).send({ status: false, message: "You are not able to update the blog" })//authorizaton
+      }
     let update_query = {};
 
     if (title != null) {
@@ -216,6 +229,10 @@ const deleteBlog = async function (req, res) {
     if (!BlogId) {
       res.status(404).send({ msg: "Please enter valid blogId" });
     }
+     //////----Authorization-----------/////////
+     if (BlogId.userId.toString() !== req.userId) {
+        return res.status(403).send({ status: false, message: "You are not able to update the blog" })//authorizaton
+      }
 
     let deletedBlog = await blogModel.findOneAndUpdate(
       { _id: data, isDeleted: false },

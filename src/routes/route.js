@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/user', userController.createUser);
 router.post("/user/login",userController.loginUser)
 
-router.post("/blogs",middleware.Authentication,blogController.createBlog);
+router.post("/blogs",blogController.createBlog);
 router.get("/blogs",middleware.Authentication,blogController.filterBlog);
 router.put("/blogs/:blogId",middleware.Authentication,blogController.updateBlog)
 router.delete("/blogs/:blogId",middleware.Authentication,blogController.deleteBlog)

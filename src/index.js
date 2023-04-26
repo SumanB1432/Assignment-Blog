@@ -3,8 +3,11 @@ const app = express();
 require("dotenv").config();
 const mongoose = require("mongoose")
 const route = require('./routes/route');
+const multer = require("multer")
 
-app.use(express.json())
+app.use(express.json());
+
+app.use(multer().any());
 
 app.get("/",(req,res)=>{
     res.send("hello")
